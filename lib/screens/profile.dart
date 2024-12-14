@@ -7,11 +7,14 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pinput/pinput.dart';
-
 import '../controllers/controllers.dart';
 import '../global.dart';
 import '../models/user_models.dart';
 import '../widgets/progress_dialog.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tea_trover_admins/screens/phonenumberverification.dart';
+
+
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -63,7 +66,7 @@ class _ProfileState extends State<Profile> {
       String? profilePhotoUrl;
 
       if (_profilePhoto != null) {
-        profilePhotoUrl = await Controllers.uploadImage(_profilePhoto!, "admins/${currentUser!.uid}/profile_photo.jpg");
+        profilePhotoUrl = await Controllers.uploadImage(_profilePhoto!, "drivers/${currentUser!.uid}/profile_photo.jpg");
       }
 
       if(currentUser!=null){
@@ -74,7 +77,7 @@ class _ProfileState extends State<Profile> {
           "profilepic":profilePhotoUrl !=null?profilePhotoUrl:userModelCurrrentInfo!.profilepic!,
         };
 
-        DatabaseReference userRef=FirebaseDatabase.instance.ref().child("admins");
+        DatabaseReference userRef=FirebaseDatabase.instance.ref().child("drivers");
 
         userRef.child(currentUser!.uid).update(userMap).then((onValue) async {
           Navigator.pop(context);
@@ -95,6 +98,44 @@ class _ProfileState extends State<Profile> {
 
   }
 
+  void logOut(){
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Logout"),
+        content: const Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close the dialog
+            },
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close the dialog
+              showDialog(
+                  barrierDismissible: false,
+                  context: context,
+                  builder: (BuildContext context) => ProgressDialog()
+              );
+
+              FirebaseAuth.instance.signOut().then((onValue){
+                Navigator.pop(context);
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Phonenumberverification(),), (route) => false,);
+
+              }).catchError((onError){
+                Navigator.pop(context);
+                Fluttertoast.showToast(msg: onError.message);
+              });
+            },
+            child: const Text("Logout"),
+          ),
+        ],
+      ),
+    );
+
+  }
   @override
   void initState() {
     // TODO: implement initState
@@ -123,7 +164,7 @@ class _ProfileState extends State<Profile> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text("My Profile",
+                  Text("My Profile driver",
                     style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold
@@ -171,15 +212,22 @@ class _ProfileState extends State<Profile> {
                               children: [
 
                                 GestureDetector(
-                                  child: CircleAvatar(
-                                    backgroundImage:  userModelCurrrentInfo!.profilepic !=null? _profilePhoto!=null?FileImage(_profilePhoto!):NetworkImage(userModelCurrrentInfo!.profilepic!):AssetImage("assets/imgs/profile.png"),
-                                    backgroundColor: Colors.white,
-                                    radius: 50,
+                                  child: Center( // Ensures the CircleAvatar is centered
+                                    child: CircleAvatar(
+                                      backgroundImage: userModelCurrrentInfo!.profilepic != null
+                                          ? _profilePhoto != null
+                                          ? FileImage(_profilePhoto!)
+                                          : NetworkImage(userModelCurrrentInfo!.profilepic!) as ImageProvider
+                                          : AssetImage("assets/imgs/profile.png"),
+                                      backgroundColor: Colors.white,
+                                      radius: 50,
+                                    ),
                                   ),
-                                  onTap: (){
+                                  onTap: () {
                                     pickImage(ImageSource.gallery);
                                   },
                                 ),
+
 
                                 SizedBox(height: 15,),
 
@@ -408,7 +456,29 @@ class _ProfileState extends State<Profile> {
                                     ),
                                   ),
                                 ),
+                                SizedBox(height: 15,),
 
+                                Center(
+                                  child: SizedBox(
+                                    width: 335,
+                                    height: 55,
+
+                                    child: ElevatedButton(
+                                      onPressed: (){
+                                        logOut();
+                                      },
+                                      child: Text("Logout",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20
+                                        ),),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           );
