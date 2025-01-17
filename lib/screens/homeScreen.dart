@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tea_trover_admins/global.dart';
+import 'collectionEnter.dart'; // Import the new screen
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -9,7 +10,6 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
-  // Mock data for demonstration
   final List<Map<String, dynamic>> collectedDetails = [
     {"weight": "15kg", "customerName": "John Doe", "regNumber": "TR12345"},
     {"weight": "20kg", "customerName": "Jane Smith", "regNumber": "TR67890"},
@@ -17,23 +17,20 @@ class _HomescreenState extends State<Homescreen> {
     {"weight": "18kg", "customerName": "Bob Williams", "regNumber": "TR33445"},
   ];
 
-  // Search-related variables
   List<Map<String, dynamic>> filteredDetails = [];
   TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    filteredDetails = collectedDetails; // Initially display all data
+    filteredDetails = collectedDetails;
   }
 
-  // Function to filter cards based on search query
   void searchCards(String query) {
     final filtered = collectedDetails.where((detail) {
       final customerName = detail['customerName'].toLowerCase();
       final regNumber = detail['regNumber'].toLowerCase();
       final index = collectedDetails.indexOf(detail).toString();
-
       return customerName.contains(query.toLowerCase()) ||
           regNumber.contains(query.toLowerCase()) ||
           index.contains(query);
@@ -50,12 +47,10 @@ class _HomescreenState extends State<Homescreen> {
       appBar: AppBar(
         title: const Text("Tea Trover Admin"),
         backgroundColor: Colors.green[700],
-        automaticallyImplyLeading: false, // Removes the back button
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Greeting Header
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: Row(
@@ -78,7 +73,6 @@ class _HomescreenState extends State<Homescreen> {
               ),
             ),
             const SizedBox(height: 10),
-            // Search Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: TextField(
@@ -94,7 +88,6 @@ class _HomescreenState extends State<Homescreen> {
               ),
             ),
             const SizedBox(height: 10),
-            // Title Section
             const Text(
               "Driver Collection Details",
               style: TextStyle(
@@ -104,7 +97,6 @@ class _HomescreenState extends State<Homescreen> {
               ),
             ),
             const SizedBox(height: 10),
-            // Card View with Search Results
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -158,6 +150,15 @@ class _HomescreenState extends State<Homescreen> {
                           ),
                         ],
                       ),
+                      onTap: () {
+                        // Navigate to the collectionEnter screen when the card is tapped
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CollectionEnterScreen(detail: detail),
+                          ),
+                        );
+                      },
                     ),
                   );
                 },
